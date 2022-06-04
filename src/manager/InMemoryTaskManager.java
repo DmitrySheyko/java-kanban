@@ -71,12 +71,6 @@ public class InMemoryTaskManager implements TaskManager {
         return listOfAllTasks;
     }
 
-    /* Приведенные ниже методы, как я понял из ТЗ спринта 3, могут использоваться в классе Main.
-     * По этой причине я изначально делал их публичными. Предлагаю не убирать его из интерфейса.
-     * getListOfTasks()
-     * getListOfEpics()
-     * getListOfSubTasks()
-     */
     @Override
     public HashMap<Integer, Task> getListOfTasks() {
         return taskList;
@@ -199,6 +193,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task deleteTaskById(Integer id) {
         if (taskList.containsKey(id)) {
+            historyManager.remove(id);
             return taskList.remove(id);
         } else {
             return null;
@@ -210,11 +205,13 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicList.containsKey(id)) {
             for (Integer subTaskId : epicList.get(id).getSubTaskIdList()) {
                 if (subTaskList.containsKey(subTaskId) && subTaskList.get(subTaskId).getEpicId() == id) {
+                    historyManager.remove(subTaskId);
                     subTaskList.remove(subTaskId);
                 } else {
                     return null;
                 }
             }
+            historyManager.remove(id);
             return epicList.remove(id);
         } else {
             return null;
@@ -226,6 +223,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTaskList.containsKey(id)) {
             Integer idOfEpicForClearItSubTasksList = subTaskList.get(id).getEpicId();
             if (epicList.get(idOfEpicForClearItSubTasksList).getSubTaskIdList().contains(id)) {
+                historyManager.remove(id);
                 epicList.get(idOfEpicForClearItSubTasksList).getSubTaskIdList().remove(id);
                 epicList.get(idOfEpicForClearItSubTasksList)
                         .setStatus(checkEpicStatus(epicList.get(idOfEpicForClearItSubTasksList).getSubTaskIdList()));
@@ -252,7 +250,6 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    // Убрал метод из интерфейса и вернул модификатор private
     private Status checkEpicStatus(ArrayList<Integer> subTaskIdList) {
         boolean isNew = false;
         boolean isInProgress = false;
