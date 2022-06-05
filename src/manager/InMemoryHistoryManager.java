@@ -2,12 +2,14 @@ package manager;
 
 import task.Task;
 
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final ArrayList<Task> historyOfRequestsList;
-    private final HashMap<Integer, Node<Task>> tasksIndexInHistoryList;
+    private final List<Task> historyOfRequestsList;
+    private final Map<Integer, Node<Task>> tasksIndexInHistoryList;
     private Node<Task> head;
     private Node<Task> tail;
 
@@ -31,10 +33,11 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public void remove(int id) {
         removeNode(tasksIndexInHistoryList.get(id));
+        tasksIndexInHistoryList.remove(id);
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return getTasks();
     }
 
@@ -51,7 +54,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         return node;
     }
 
-    public ArrayList<Task> getTasks() {
+    public List<Task> getTasks() {
         historyOfRequestsList.clear();
         if (head != null) {
             Node<Task> currentNode = head;
