@@ -5,14 +5,15 @@ import task.Status;
 import task.SubTask;
 import task.Task;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
     private static int uniqueTaskId = 0;
-    private final HashMap<Integer, Task> taskList;
-    private final HashMap<Integer, SubTask> subTaskList;
-    private final HashMap<Integer, Epic> epicList;
+    private final Map<Integer, Task> taskList;
+    private final Map<Integer, SubTask> subTaskList;
+    private final Map<Integer, Epic> epicList;
     HistoryManager historyManager;
 
     public InMemoryTaskManager() {
@@ -60,11 +61,9 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    // Данный метод не был private т.к. используется в классе Main.
-    // Предлагаю не убирать его из интерфейса.
     @Override
-    public HashMap<Integer, Task> getListOfAllTasks() {
-        HashMap<Integer, Task> listOfAllTasks = new HashMap<>();
+    public Map<Integer, Task> getListOfAllTasks() {
+        Map<Integer, Task> listOfAllTasks = new HashMap<>();
         listOfAllTasks.putAll(epicList);
         listOfAllTasks.putAll(taskList);
         listOfAllTasks.putAll(subTaskList);
@@ -72,22 +71,22 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public HashMap<Integer, Task> getListOfTasks() {
+    public Map<Integer, Task> getListOfTasks() {
         return taskList;
     }
 
     @Override
-    public HashMap<Integer, Epic> getListOfEpics() {
+    public Map<Integer, Epic> getListOfEpics() {
         return epicList;
     }
 
     @Override
-    public HashMap<Integer, SubTask> getListOfSubTasks() {
+    public Map<Integer, SubTask> getListOfSubTasks() {
         return subTaskList;
     }
 
     @Override
-    public HashMap<Integer, Task> deleteAllTasks() {
+    public Map<Integer, Task> deleteAllTasks() {
         epicList.clear();
         taskList.clear();
         subTaskList.clear();
@@ -95,20 +94,20 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public HashMap<Integer, Task> deleteTasks() {
+    public Map<Integer, Task> deleteTasks() {
         taskList.clear();
         return taskList;
     }
 
     @Override
-    public HashMap<Integer, Epic> deleteEpics() {
+    public Map<Integer, Epic> deleteEpics() {
         subTaskList.clear();
         epicList.clear();
         return epicList;
     }
 
     @Override
-    public HashMap<Integer, SubTask> deleteSubTasks() {
+    public Map<Integer, SubTask> deleteSubTasks() {
         for (SubTask subTaskForDelete : subTaskList.values()) {
             Integer idOfEpicForClearItSubTasksList = subTaskForDelete.getEpicId();
             if (epicList.containsKey(idOfEpicForClearItSubTasksList)) {
@@ -237,7 +236,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Integer> getListOfSubTasksOfEpic(Integer epicId) {
+    public List<Integer> getListOfSubTasksOfEpic(Integer epicId) {
         if (epicList.containsKey(epicId)) {
             return epicList.get(epicId).getSubTaskIdList();
         } else {
@@ -246,11 +245,11 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Task> getHistory() {
+    public List<Task> getHistory() {
         return historyManager.getHistory();
     }
 
-    private Status checkEpicStatus(ArrayList<Integer> subTaskIdList) {
+    private Status checkEpicStatus(List<Integer> subTaskIdList) {
         boolean isNew = false;
         boolean isInProgress = false;
         boolean isDone = false;

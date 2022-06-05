@@ -1,12 +1,11 @@
 package manager;
 
 import task.Epic;
-import task.Status;
 import task.SubTask;
 import task.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public interface TaskManager {
 
@@ -16,21 +15,21 @@ public interface TaskManager {
 
     SubTask creationOfSubTask(SubTask subTask);
 
-    HashMap<Integer, Task> getListOfAllTasks();
+    Map<Integer, Task> getListOfAllTasks();
 
-    HashMap<Integer, Task> getListOfTasks();
+    Map<Integer, Task> getListOfTasks();
 
-    HashMap<Integer, Epic> getListOfEpics();
+    Map<Integer, Epic> getListOfEpics();
 
-    HashMap<Integer, SubTask> getListOfSubTasks();
+    Map<Integer, SubTask> getListOfSubTasks();
 
-    HashMap<Integer, Task> deleteAllTasks();
+    Map<Integer, Task> deleteAllTasks();
 
-    HashMap<Integer, Task> deleteTasks();
+    Map<Integer, Task> deleteTasks();
 
-    HashMap<Integer, Epic> deleteEpics();
+    Map<Integer, Epic> deleteEpics();
 
-    HashMap<Integer, SubTask> deleteSubTasks();
+    Map<Integer, SubTask> deleteSubTasks();
 
     Task getTaskById(Integer id);
 
@@ -50,8 +49,7 @@ public interface TaskManager {
 
     SubTask deleteSubTaskById(Integer id);
 
-    ArrayList<Integer> getListOfSubTasksOfEpic(Integer epicId);
+    List<Integer> getListOfSubTasksOfEpic(Integer epicId);
 
-    ArrayList<Task> getHistory();
-
+    List<Task> getHistory();
 }
