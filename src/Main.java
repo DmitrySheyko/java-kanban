@@ -1,5 +1,5 @@
 /*
- * Version 7.0
+ * Version 8.0
  *
  * Author: Sheyko Dmitry
  */

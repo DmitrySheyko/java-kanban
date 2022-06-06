@@ -14,13 +14,13 @@ public class InMemoryTaskManager implements TaskManager {
     private final Map<Integer, Task> taskList;
     private final Map<Integer, SubTask> subTaskList;
     private final Map<Integer, Epic> epicList;
-    HistoryManager historyManager;
+    private final HistoryManager historyManager;  // доавил модификатор доступа и final
 
     public InMemoryTaskManager() {
         this.taskList = new HashMap<>();
         this.subTaskList = new HashMap<>();
         this.epicList = new HashMap<>();
-        historyManager = Managers.getDefaultHistory();
+        this.historyManager = Managers.getDefaultHistory();
     }
 
     @Override
@@ -49,8 +49,8 @@ public class InMemoryTaskManager implements TaskManager {
     public SubTask creationOfSubTask(SubTask subTask) {
         if (epicList.containsKey(subTask.getEpicId())) {
             uniqueTaskId++;
-            SubTask newSubTask = new SubTask(uniqueTaskId, subTask.getName(), subTask.getDescription()
-                    , subTask.getEpicId());
+            SubTask newSubTask = new SubTask(uniqueTaskId, subTask.getName(), subTask.getDescription(),
+                    subTask.getEpicId()); // перенес запятую
             newSubTask.setStatus(Status.NEW);
             subTaskList.put(uniqueTaskId, newSubTask);
             Epic epicForUpdate = epicList.get(subTask.getEpicId());
