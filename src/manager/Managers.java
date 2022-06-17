@@ -9,7 +9,7 @@ public class Managers {
 
     public static FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(file);
-        fileBackedTasksManager.fromString();
+        fileBackedTasksManager.readSaveFromFile();
         return fileBackedTasksManager;
     }
 
