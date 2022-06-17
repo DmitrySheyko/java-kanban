@@ -3,22 +3,22 @@
  * Tech requirements of sprint 6
  * Author: Sheyko Dmitry
  */
-
-import manager.FileBackedTasksManager;
-import manager.Managers;
-import manager.TaskManager;
-import task.Epic;
-import task.SubTask;
-import task.Task;
-
-import java.io.File;
-import java.util.ArrayList;
-
-public class Main {
-
-    public static void main(String[] args) {
-        FileBackedTasksManager fileBackedTasksManager = Managers.loadFromFile(new File("Save.csv"));
-
+//
+//import manager.FileBackedTasksManager;
+//import manager.Managers;
+//import manager.TaskManager;
+//import task.Epic;
+//import task.SubTask;
+//import task.Task;
+//
+//import java.io.File;
+//import java.util.ArrayList;
+//
+//public class Main {
+//
+//    public static void main(String[] args) {
+//        FileBackedTasksManager fileBackedTasksManager = Managers.loadFromFile(new File("Save.csv"));
+//
 //        // Создаю задачу 1
 //        Task task1 = new Task(10, "Покупка носков", "Купить черные носки");
 //        System.out.println("Создана задача: \n" + fileBackedTasksManager.creationOfTask(task1) + "\n");
@@ -82,29 +82,29 @@ public class Main {
 //        // Удаляю эпик id 3. Подзадачи 4, 5 и 6 удалятся автоматически
 //        fileBackedTasksManager.deleteEpicById(3);
 //
-        // Печатаю список всех задач
-        printAllTasks(fileBackedTasksManager);
-
-        // Печатаю историю вызова задач
-        printHistory(fileBackedTasksManager);
-
-    }
-
-    public static void printAllTasks(TaskManager taskManager) {
-        String[] array = taskManager.getListOfAllTasks().toString().split("},");
-        StringBuilder result = new StringBuilder("Список всех задач: \n");
-        for (String line : array) {
-            result.append(line).append(".\n");
-        }
-        System.out.println(result);
-    }
-
-    public static void printHistory(TaskManager taskManager) {
-        String[] array = taskManager.getHistory().toString().split("},");
-        StringBuilder result = new StringBuilder("История обращения к задачам: \n");
-        for (String line : array) {
-            result.append(line).append(".\n");
-        }
-        System.out.println(result);
-    }
-}
+//        // Печатаю список всех задач
+//        printAllTasks(fileBackedTasksManager);
+//
+//        // Печатаю историю вызова задач
+//        printHistory(fileBackedTasksManager);
+//
+//    }
+//
+//    public static void printAllTasks(TaskManager taskManager) {
+//        String[] array = taskManager.getListOfAllTasks().toString().split("},");
+//        StringBuilder result = new StringBuilder("Список всех задач: \n");
+//        for (String line : array) {
+//            result.append(line).append(".\n");
+//        }
+//        System.out.println(result);
+//    }
+//
+//    public static void printHistory(TaskManager taskManager) {
+//        String[] array = taskManager.getHistory().toString().split("},");
+//        StringBuilder result = new StringBuilder("История обращения к задачам: \n");
+//        for (String line : array) {
+//            result.append(line).append(".\n");
+//        }
+//        System.out.println(result);
+//    }
+//}

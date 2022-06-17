@@ -50,7 +50,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicList.containsKey(subTask.getEpicId())) {
             uniqueTaskId++;
             SubTask newSubTask = new SubTask(uniqueTaskId, subTask.getName(), subTask.getDescription(),
-                    subTask.getEpicId()); // перенес запятую
+                    subTask.getEpicId());
             newSubTask.setStatus(Status.NEW);
             subTaskList.put(uniqueTaskId, newSubTask);
             Epic epicForUpdate = epicList.get(subTask.getEpicId());
