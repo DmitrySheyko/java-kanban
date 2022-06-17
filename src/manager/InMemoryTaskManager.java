@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
-    private static int uniqueTaskId = 0;
-    private final Map<Integer, Task> taskList;
-    private final Map<Integer, SubTask> subTaskList;
-    private final Map<Integer, Epic> epicList;
-    private final HistoryManager historyManager;  // доавил модификатор доступа и final
+    protected static int uniqueTaskId = 0;
+    protected final Map<Integer, Task> taskList;
+    protected final Map<Integer, SubTask> subTaskList;
+    protected final Map<Integer, Epic> epicList;
+    protected final HistoryManager historyManager;  // доавил модификатор доступа и final
 
     public InMemoryTaskManager() {
         this.taskList = new HashMap<>();
@@ -249,7 +249,7 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    private Status checkEpicStatus(List<Integer> subTaskIdList) {
+    protected Status checkEpicStatus(List<Integer> subTaskIdList) {
         boolean isNew = false;
         boolean isInProgress = false;
         boolean isDone = false;
