@@ -1,7 +1,7 @@
 /*
  * Version 9.0
  * Tech requirements of sprint 6
- * Author: Sheyko Dmitry
+ * Author: Sheyko Dmitry.
  */
 //
 //import manager.FileBackedTasksManager;
