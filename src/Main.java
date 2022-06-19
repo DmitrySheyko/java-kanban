@@ -1,5 +1,5 @@
 /*
- * Version 9.1
+ * Version 9.2
  * Tech requirements of sprint 6
  * Author: Sheyko Dmitry.
  */
