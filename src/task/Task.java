@@ -7,13 +7,11 @@ public class Task {
     protected String name;
     protected String description;
     protected Status status;
-    private int epicId;
 
     public Task(int id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.epicId = id;
     }
 
     public int getId() {
@@ -46,14 +44,6 @@ public class Task {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public int getEpicId() {
-        return epicId;
-    }
-
-    public void setEpicId(int epicId) {
-        this.epicId = epicId;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package manager;
 
-public enum TypesOfTasks {
+public enum TypeTask {
     TASK,
     EPIC,
     SUBTASK

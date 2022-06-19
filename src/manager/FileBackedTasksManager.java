@@ -1,5 +1,6 @@
 package manager;
 
+import exceptions.ManagerSaveException;
 import task.Epic;
 import task.Status;
 import task.SubTask;
@@ -15,49 +16,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     public FileBackedTasksManager(File saveFile) {
         this.saveFile = saveFile;
-    }
-
-    public static void main(String[] args) {
-        FileBackedTasksManager fileBackedTasksManager = Managers
-                .loadFromFile(new File("java-kanban/Save/Save.csv"));
-
-        // Создаю задачу 1
-        Task task1 = new Task(100, "Тестирование 1", "Создать тестовый Task 1");
-        fileBackedTasksManager.creationOfTask(task1);
-
-        // Создаю задачу 2
-        Task task2 = new Task(100, "Тестирование 2", "Создать тестовый Task 2");
-        fileBackedTasksManager.creationOfTask(task2);
-
-        // Создаю Epic1 с двумя подзадачами
-        ArrayList<Integer> subTasksListIdOfEpic1 = new ArrayList<>();
-        Epic epic1 = new Epic(100, "Тестирование 3", "Создать тестовый Epic 1"
-                , subTasksListIdOfEpic1);
-        int idOfCreatedEpic1 = fileBackedTasksManager.creationOfEpic(epic1).getId();
-
-        // - подзадача 1 для Epic1
-        SubTask subTask1OfEpic1 = new SubTask(100, "Тестирование 4"
-                , "Создать тестовый SubTask 1", idOfCreatedEpic1);
-        fileBackedTasksManager.creationOfSubTask(subTask1OfEpic1);
-
-        //  - подзадача 2 для Epic1
-        SubTask subTask2OfEpic1 = new SubTask(10, "Тестирование 5"
-                , "Создать тестовый SubTask 2", idOfCreatedEpic1);
-        fileBackedTasksManager.creationOfSubTask(subTask2OfEpic1);
-
-        // Обращаюсь к задачам по их ID для заполнения имстории просмотров
-        fileBackedTasksManager.getTaskById(2);
-        fileBackedTasksManager.getTaskById(1);
-        fileBackedTasksManager.getTaskById(2);
-        fileBackedTasksManager.getEpicById(3);
-        fileBackedTasksManager.getEpicById(3);
-        fileBackedTasksManager.getSubTaskById(5);
-        fileBackedTasksManager.getSubTaskById(4);
+        readSaveFromFile();
     }
 
     public void checkSaveFile() {
         File directory = new File(saveFile.getParent());
-        try {
             if (!directory.exists()) {
                 if (!directory.mkdir()) {
                     throw new ManagerSaveException("Ошибка при создании директории для сохранения");
@@ -69,12 +32,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                         throw new ManagerSaveException("Ошибка при создании файла для сохранения");
                     }
                 } catch (IOException e) {
-                    throw new ManagerSaveException("Ошибка записи файла сохранения");
+                    throw new ManagerSaveException("Ошибка записи файла сохранения" + e.getMessage());
                 }
             }
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     public void saveToFile() {
@@ -84,21 +44,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         for (Task task : getListOfAllTasks().values()) {
             tasksInString.append(tasksToString(task));
         }
-        try {
             try (FileWriter fileWriter = new FileWriter(saveFile)) {
                 fileWriter.write(head + tasksInString + historyToString());
             } catch (IOException e) {
                 throw new ManagerSaveException("Ошибка записи файла сохранения");
             }
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     public void readSaveFromFile() {
         checkSaveFile();
         StringBuilder resultOfReading = new StringBuilder();
-        try {
             try (FileReader fileReader = new FileReader(saveFile)) {
 
                 while (fileReader.ready()) {
@@ -107,9 +62,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             } catch (IOException e) {
                 throw new ManagerSaveException("Ошибка чтения файла сохранения");
             }
-        } catch (ManagerSaveException e) {
-            System.out.println(e.getMessage());
-        }
         String value = resultOfReading.toString();
         if (!value.isBlank()) {
             String[] lines = value.split("\n");
@@ -118,6 +70,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                     tasksFromString(lines[i]);
                 } else {
                     historyFromString(lines[i + 1]);
+                    break;
                 }
             }
             saveToFile();
@@ -126,32 +79,32 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     public String tasksToString(Task task) {
         StringBuilder stringOfTask = new StringBuilder();
-        String classOfTask = task.getClass().getSimpleName();
-        switch (classOfTask) {
-            case "Task" -> stringOfTask.append(task.getId()).append(',')
-                    .append("Task").append(',')
+        TypeTask typeTasks = TypeTask.valueOf(task.getClass().getSimpleName().toUpperCase());
+        switch (typeTasks) {
+            case TASK -> stringOfTask.append(task.getId()).append(',')
+                    .append(TypeTask.TASK).append(',')
                     .append(task.getName()).append(',')
                     .append(task.getStatus().toString()).append(',')
                     .append(task.getDescription()).append(',')
                     .append("-").append(',')
                     .append("-,\n");
-            case "Epic" -> {
+            case EPIC -> {
                 Epic epic = (Epic) task;
                 StringBuilder subTasks = new StringBuilder(epic.getSubTaskIdList().toString()
                         .replace(',', '/'));
                 subTasks.deleteCharAt(0).deleteCharAt(subTasks.length() - 1);
                 stringOfTask.append(epic.getId()).append(',')
-                        .append("Epic").append(',')
+                        .append(TypeTask.EPIC).append(',')
                         .append(epic.getName()).append(',')
                         .append(epic.getStatus().toString()).append(',')
                         .append(epic.getDescription()).append(',')
                         .append("-").append(",")
                         .append(subTasks).append(",\n");
             }
-            case "SubTask" -> {
+            case SUBTASK -> {
                 SubTask subTask = (SubTask) task;
                 stringOfTask.append(subTask.getId()).append(',')
-                        .append("SubTask").append(',')
+                        .append(TypeTask.SUBTASK).append(',')
                         .append(subTask.getName()).append(',')
                         .append(subTask.getStatus().toString()).append(',')
                         .append(subTask.getDescription()).append(',')
@@ -164,21 +117,21 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
     public void tasksFromString(String stringOfTask) {
         String[] words = stringOfTask.split(",");
-        String classOfTask = words[1];
-        switch (classOfTask) {
-            case "Task" -> creationOfTask(new Task(Integer.parseInt(words[0]), words[2], words[4]))
+        TypeTask typeTasks = TypeTask.valueOf(words[1]);
+        switch (typeTasks) {
+            case TASK -> creationOfTask(new Task(Integer.parseInt(words[0]), words[2], words[4]))
                     .setStatus(readStatus(words[3]));
-            case "Epic" ->
+            case EPIC ->
                     creationOfEpic(new Epic(Integer.parseInt(words[0]), words[2], words[4], new ArrayList<Integer>()));
-            case "SubTask" -> creationOfSubTask(new SubTask(Integer.parseInt(words[0]), words[2], words[4],
+            case SUBTASK -> creationOfSubTask(new SubTask(Integer.parseInt(words[0]), words[2], words[4],
                     Integer.parseInt(words[5]))).setStatus(readStatus(words[3]));
         }
     }
 
     public Status readStatus(String status) {
-        if (status.equals("NEW")) {
+        if (status == Status.NEW.toString()) {
             return Status.NEW;
-        } else if (status.equals("IN_PROGRESS")) {
+        } else if (status == Status.IN_PROGRESS.toString()) {
             return Status.IN_PROGRESS;
         } else {
             return Status.DONE;
