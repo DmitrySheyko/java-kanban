@@ -8,6 +8,7 @@ public class SubTask extends Task {
     public SubTask(int id, String name, String description, int epicId) {
         super(id, name, description);
         this.epicId = epicId;
+        this.typeTask = TypeTask.SUBTASK;
     }
 
     public int getEpicId() {
@@ -22,10 +23,13 @@ public class SubTask extends Task {
     public String toString() {
         return "SubTask{" +
                 "id=" + id +
-                ", epicId=" + epicId +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
+                ", type=" + typeTask + '\'' +
+                ", name=" + name + '\'' +
+                ", description=" + description + '\'' +
                 ", status=" + status +
+                ", epicId=" + epicId +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
                 '}';
     }
 

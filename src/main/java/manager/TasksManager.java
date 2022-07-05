@@ -4,10 +4,15 @@ import task.Epic;
 import task.SubTask;
 import task.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
-public interface TaskManager {
+public interface TasksManager {
+
+    int getUniqueTaskId();
 
     Task creationOfTask(Task task);
 
@@ -24,12 +29,6 @@ public interface TaskManager {
     Map<Integer, SubTask> getListOfSubTasks();
 
     Map<Integer, Task> deleteAllTasks();
-
-    Map<Integer, Task> deleteTasks();
-
-    Map<Integer, Epic> deleteEpics();
-
-    Map<Integer, SubTask> deleteSubTasks();
 
     Task getTaskById(Integer id);
 
@@ -52,4 +51,18 @@ public interface TaskManager {
     List<Integer> getListOfSubTasksOfEpic(Integer epicId);
 
     List<Task> getHistory();
+
+    void setTaskAndSubTaskStartDateTime(Task task, String startDateTime);
+
+    void setTaskAndSubTaskDuration(Task task, int durationInMinutes);
+
+    LocalDateTime getStartDateTime(Task task);
+
+    void setEpicDuration(int epicId);
+
+    void setEpicStartDateTime(int epicId);
+
+    int getTaskDuration(Task task);
+
+    List <Task> getPrioritizedTasks();
 }

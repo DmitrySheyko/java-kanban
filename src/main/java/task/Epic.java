@@ -9,6 +9,7 @@ public class Epic extends Task {
     public Epic(int id, String name, String description, List<Integer> subTaskIdList) {
         super(id, name, description);
         this.subTaskIdList = subTaskIdList;
+        this.typeTask = TypeTask.EPIC;
     }
 
     public List<Integer> getSubTaskIdList() {
@@ -23,10 +24,13 @@ public class Epic extends Task {
     public String toString() {
         return "Epic{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status='" + status + '\'' +
+                ", type=" + typeTask +
+                ", name=" + name +
+                ", description=" + description +
+                ", status=" + status +
                 ", subTaskIdList=" + subTaskIdList +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
                 '}';
     }
 
@@ -36,7 +40,7 @@ public class Epic extends Task {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Epic epic = (Epic) o;
-        return Objects.equals(subTaskIdList, epic.subTaskIdList);
+        return subTaskIdList.equals(epic.subTaskIdList);
     }
 
     @Override

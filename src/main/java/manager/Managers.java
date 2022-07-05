@@ -4,11 +4,11 @@ import java.io.File;
 
 public class Managers {
 
-//    public static TaskManager getDefault() {
-//        return new InMemoryTaskManager();
-//    }
+    public static InMemoryTasksManager getDefaultManager() {
+        return new InMemoryTasksManager();
+    }
 
-    public static FileBackedTasksManager getDefault() {
+    public static FileBackedTasksManager getDefaultBackedManager() {
         return new FileBackedTasksManager(new File("resources/task.csv"));
     }
 
