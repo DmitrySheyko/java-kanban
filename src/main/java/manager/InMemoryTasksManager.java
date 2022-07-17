@@ -38,6 +38,10 @@ public class InMemoryTasksManager implements TasksManager {
     public Task creationOfTask(Task task) {
         Task newTask = new Task(getUniqueTaskId(), task.getName(), task.getDescription());
         newTask.setStatus(Status.NEW);
+        if(task.getStartTime()!=null){
+            setTaskAndSubTaskStartDateTime(newTask,  task.getStartTime().format(dateTimeFormatter));
+            setTaskAndSubTaskDuration(newTask, task.getDuration());
+        }
         taskList.put(newTask.getId(), newTask);
         return newTask;
     }
@@ -60,6 +64,10 @@ public class InMemoryTasksManager implements TasksManager {
             SubTask newSubTask = new SubTask(getUniqueTaskId(), subTask.getName(), subTask.getDescription(),
                     subTask.getEpicId());
             newSubTask.setStatus(Status.NEW);
+            if(subTask.getStartTime()!=null){
+                setTaskAndSubTaskStartDateTime(newSubTask,  subTask.getStartTime().format(dateTimeFormatter));
+                setTaskAndSubTaskDuration(newSubTask, subTask.getDuration());
+            }
             subTaskList.put(newSubTask.getId(), newSubTask);
             Epic epicForUpdate = epicList.get(subTask.getEpicId());
             epicForUpdate.getSubTaskIdList().add(newSubTask.getId());
@@ -347,9 +355,15 @@ public class InMemoryTasksManager implements TasksManager {
                 LocalDateTime dateTime = subTaskList.get(epicForUpdate.getSubTaskIdList().get(0)).getStartTime();
                 epicForUpdate.setStartTime(dateTime);
             } else if (epicForUpdate.getSubTaskIdList().size() > 1) {
-                epicForUpdate.setStartTime(epicForUpdate.getSubTaskIdList().stream().filter(id -> subTaskList.get(id).
-                        getStartTime() != null).map(id -> subTaskList.get(id).getStartTime()).reduce(LocalDateTime.MAX,
-                        (startTime1, startTime2) -> startTime1.isBefore(startTime2) ? startTime1 : startTime2));
+                Optional<LocalDateTime> optionalEarliestTime = epicForUpdate.getSubTaskIdList().stream()
+                        .filter(id -> subTaskList.get(id).getStartTime() != null)
+                        .map(id -> subTaskList.get(id).getStartTime())
+                        .reduce((startTime1, startTime2) -> startTime1.isBefore(startTime2) ? startTime1 : startTime2);
+                if(optionalEarliestTime.isPresent()){
+                    epicForUpdate.setStartTime(optionalEarliestTime.get());
+                } else {
+                    epicForUpdate.setStartTime(null);
+                }
                 updateEpicByNewEpic(epicForUpdate);
             }
         }

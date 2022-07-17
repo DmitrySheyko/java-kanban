@@ -102,7 +102,7 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id && duration == task.duration && Objects.equals(name, task.name) && Objects.equals(description, task.description) && status == task.status && typeTask == task.typeTask && startTime.equals(task.startTime);
+        return getId() == task.getId() && getDuration() == task.getDuration() && Objects.equals(getName(), task.getName()) && Objects.equals(getDescription(), task.getDescription()) && getStatus() == task.getStatus() && getTypeTask() == task.getTypeTask() && Objects.equals(getStartTime(), task.getStartTime());
     }
 
     @Override

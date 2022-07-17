@@ -10,11 +10,14 @@ import java.util.Map;
 
 
 public class FileBackedTasksManager extends InMemoryTasksManager implements TasksManager {
-    private final File saveFile;
+    private File saveFile;
 
     public FileBackedTasksManager(File saveFile) {
         this.saveFile = saveFile;
-        readSaveFromFile();
+        loadFromSave();
+    }
+
+    public FileBackedTasksManager() {
     }
 
     public void checkSaveFile() {
@@ -33,7 +36,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         }
     }
 
-    public void saveToFile() {
+    public void save() {
         checkSaveFile();
         String head = "id,type,name,status,description,epic,subtasks,Date&Time,Duration\n";
         StringBuilder tasksInString = new StringBuilder();
@@ -47,7 +50,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         }
     }
 
-    public void readSaveFromFile() {
+    public void loadFromSave() {
         checkSaveFile();
         StringBuilder resultOfReading = new StringBuilder();
         try (FileReader fileReader = new FileReader(saveFile)) {
@@ -68,7 +71,6 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
                     break;
                 }
             }
-            saveToFile();
         }
     }
 
@@ -182,7 +184,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         Task loadedTask = new Task(task.getId(), task.getName(), task.getDescription());
         loadedTask.setStatus(taskStatus);
         taskList.put(loadedTask.getId(), loadedTask);
-        saveToFile();
+        save();
         return loadedTask;
     }
 
@@ -190,7 +192,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         Epic loadedEpic = new Epic(epic.getId(), epic.getName(), epic.getDescription(), epic.getSubTaskIdList());
         loadedEpic.setStatus(checkEpicStatus(loadedEpic.getSubTaskIdList()));
         epicList.put(loadedEpic.getId(), loadedEpic);
-        saveToFile();
+        save();
         return loadedEpic;
     }
 
@@ -203,7 +205,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
             Epic epicForUpdate = epicList.get(subTask.getEpicId());
             epicForUpdate.getSubTaskIdList().add(loadedSubTask.getId());
             updateEpicByNewEpic(epicForUpdate);
-            saveToFile();
+            save();
             return loadedSubTask;
         } else {
             return null;
@@ -214,8 +216,12 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     public Task creationOfTask(Task task) {
         Task newTask = new Task(getUniqueTaskId(), task.getName(), task.getDescription());
         newTask.setStatus(Status.NEW);
+        if (task.getStartTime() != null) {
+            setTaskAndSubTaskStartDateTime(newTask, task.getStartTime().format(dateTimeFormatter));
+            setTaskAndSubTaskDuration(newTask, task.getDuration());
+        }
         taskList.put(newTask.getId(), newTask);
-        saveToFile();
+        save();
         return newTask;
     }
 
@@ -225,7 +231,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
             Epic newEpic = new Epic(getUniqueTaskId(), epic.getName(), epic.getDescription(), epic.getSubTaskIdList());
             newEpic.setStatus(Status.NEW);
             epicList.put(newEpic.getId(), newEpic);
-            saveToFile();
+            save();
             return newEpic;
         } else {
             return null;
@@ -238,11 +244,15 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
             SubTask newSubTask = new SubTask(getUniqueTaskId(), subTask.getName(), subTask.getDescription(),
                     subTask.getEpicId());
             newSubTask.setStatus(Status.NEW);
+            if (subTask.getStartTime() != null) {
+                setTaskAndSubTaskStartDateTime(newSubTask, subTask.getStartTime().format(dateTimeFormatter));
+                setTaskAndSubTaskDuration(newSubTask, subTask.getDuration());
+            }
             subTaskList.put(newSubTask.getId(), newSubTask);
             Epic epicForUpdate = epicList.get(subTask.getEpicId());
             epicForUpdate.getSubTaskIdList().add(newSubTask.getId());
             updateEpicByNewEpic(epicForUpdate);
-            saveToFile();
+            save();
             return newSubTask;
         } else {
             return null;
@@ -250,7 +260,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     }
 
     @Override
-    public Map<Integer, Task> deleteAllTasks() {   //TODO
+    public Map<Integer, Task> deleteAllTasks() {
         for (Integer id : getListOfAllTasks().keySet()) {
             historyManager.remove(id);
         }
@@ -258,7 +268,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         taskList.clear();
         subTaskList.clear();
         uniqueTaskId = 1;
-        saveToFile();
+        save();
         return getListOfAllTasks();
     }
 
@@ -266,7 +276,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     public Task getTaskById(Integer id) {
         if (taskList.get(id) != null) {
             historyManager.add(taskList.get(id));
-            saveToFile();
+            save();
             return taskList.get(id);
         } else {
             return null;
@@ -277,7 +287,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     public Epic getEpicById(Integer id) {
         if (epicList.get(id) != null) {
             historyManager.add(epicList.get(id));
-            saveToFile();
+            save();
             return epicList.get(id);
         } else {
             return null;
@@ -288,7 +298,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     public SubTask getSubTaskById(Integer id) {
         if (subTaskList.get(id) != null) {
             historyManager.add(subTaskList.get(id));
-            saveToFile();
+            save();
             return subTaskList.get(id);
         } else {
             return null;
@@ -299,7 +309,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
     public Task updateTaskByNewTask(Task task) {
         if (taskList.containsKey(task.getId())) {
             Task replacedTask = taskList.replace(task.getId(), task);
-            saveToFile();
+            save();
             return replacedTask;
         } else {
             return null;
@@ -311,7 +321,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         if (epicList.containsKey(epic.getId())) {
             Epic replacedEpic = epicList.replace(epic.getId(), epic);
             epic.setStatus(checkEpicStatus(epic.getSubTaskIdList()));
-            saveToFile();
+            save();
             return replacedEpic;
         } else {
             return null;
@@ -327,7 +337,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
                 epicForCheckStatus.setStatus(checkEpicStatus(epicForCheckStatus.getSubTaskIdList()));
                 setEpicStartDateTime(epicForCheckStatus.getId());
                 setEpicDuration(epicForCheckStatus.getId());
-                saveToFile();
+                save();
                 return replacedSubTask;
             } else {
                 return null;
@@ -342,7 +352,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
         if (taskList.containsKey(id)) {
             historyManager.remove(id);
             Task deletedTask = taskList.remove(id);
-            saveToFile();
+            save();
             return deletedTask;
         } else {
             return null;
@@ -362,7 +372,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
             }
             historyManager.remove(id);
             Epic deletedEpic = epicList.remove(id);
-            saveToFile();
+            save();
             return deletedEpic;
         } else {
             return null;
@@ -384,7 +394,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
                 return null;
             }
             SubTask deletedSubTask = subTaskList.remove(id);
-            saveToFile();
+            save();
             return deletedSubTask;
         } else {
             return null;
