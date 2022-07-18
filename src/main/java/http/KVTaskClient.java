@@ -8,31 +8,31 @@ import java.net.http.HttpResponse;
 
 public class KVTaskClient {
     private final HttpClient client;
-    private final URI UrlOfKvServer;
-    private final String API_TOKEN;
+    private final URI urlOfKvServer;
+    private final String apiToken;
 
-    public KVTaskClient() throws IOException, InterruptedException {
+    public KVTaskClient(String url) throws IOException, InterruptedException {
         this.client = HttpClient.newHttpClient();
-        this.UrlOfKvServer = URI.create("http://localhost:8078");
-        this.API_TOKEN = makeRegistration();
+        this.urlOfKvServer = URI.create(url);
+        this.apiToken = makeRegistration();
     }
 
     public void put(String key, String json) throws IOException, InterruptedException {
-        URI url = URI.create(UrlOfKvServer + "/save/" + key + "?API_TOKEN=" + API_TOKEN);
+        URI url = URI.create(urlOfKvServer + "/save/" + key + "?API_TOKEN=" + apiToken);
         final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     public String load(String key) throws IOException, InterruptedException {
-        URI url = URI.create(UrlOfKvServer + "/load/" + key + "?API_TOKEN=" + API_TOKEN);
+        URI url = URI.create(urlOfKvServer + "/load/" + key + "?API_TOKEN=" + apiToken);
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
 
     public String makeRegistration() throws IOException, InterruptedException {
-        URI url = URI.create(UrlOfKvServer + "/register");
+        URI url = URI.create(urlOfKvServer + "/register");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .GET()

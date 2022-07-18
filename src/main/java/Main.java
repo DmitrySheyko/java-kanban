@@ -6,17 +6,14 @@
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import http.HttpTaskServer;
 import http.KVServer;
-import http.LocalDateTimeAdapter;
-import task.Epic;
-import task.Status;
-import task.SubTask;
-import task.Task;
+import gsonAdapters.LocalDateTimeAdapter;
+import task.*;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,14 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+    private final static Gson GSON = new GsonBuilder().serializeNulls()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Gson gson = new GsonBuilder().serializeNulls()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .create();
+
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
         new KVServer().start();
-        HttpTaskServer httpTaskServer1 = new HttpTaskServer();
+        HttpTaskServer httpTaskServer1 = new HttpTaskServer("http://localhost:8078", "save1");
         httpTaskServer1.start();
         HttpClient client = HttpClient.newHttpClient();
 
@@ -42,7 +40,7 @@ public class Main {
         Task task1 = new Task(100, "Тест 1", "Создать Task 1");
         task1.setStartTime(LocalDateTime.parse("25.07.2022 20:40", dateTimeFormatter));
         task1.setDuration(60);
-        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(gson.toJson(task1));
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(GSON.toJson(task1));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task/"))
                 .POST(body).build();
@@ -52,7 +50,7 @@ public class Main {
         Task task2 = new Task(100, "Тест 1", "Создать Task 1");
         task2.setStartTime(LocalDateTime.parse("26.07.2022 12:30", dateTimeFormatter));
         task2.setDuration(60);
-        HttpRequest.BodyPublisher body2 = HttpRequest.BodyPublishers.ofString(gson.toJson(task2));
+        HttpRequest.BodyPublisher body2 = HttpRequest.BodyPublishers.ofString(GSON.toJson(task2));
         HttpRequest request2 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task/"))
                 .POST(body2).build();
@@ -60,7 +58,7 @@ public class Main {
 
         // Создаю задачу 3 через HttpTaskServer
         HttpRequest.BodyPublisher body3 = HttpRequest.BodyPublishers
-                .ofString(gson.toJson(new Task(100, "Тест 3", "Создать Task 3")));
+                .ofString(GSON.toJson(new Task(100, "Тест 3", "Создать Task 3")));
         HttpRequest request3 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task/"))
                 .POST(body3).build();
@@ -68,7 +66,7 @@ public class Main {
 
         // Создаю задачу 4 через HttpTaskServer
         HttpRequest.BodyPublisher body4 = HttpRequest.BodyPublishers
-                .ofString(gson.toJson(new Task(100, "Тест 4", "Создать Task 4")));
+                .ofString(GSON.toJson(new Task(100, "Тест 4", "Создать Task 4")));
         HttpRequest request4 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task/"))
                 .POST(body4).build();
@@ -76,7 +74,7 @@ public class Main {
 
         // Создаю задачу 5 через HttpTaskServer
         HttpRequest.BodyPublisher body5 = HttpRequest.BodyPublishers
-                .ofString(gson.toJson(new Task(100, "Тест 5", "Создать Task 5")));
+                .ofString(GSON.toJson(new Task(100, "Тест 5", "Создать Task 5")));
         HttpRequest request5 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task/"))
                 .POST(body5).build();
@@ -84,7 +82,7 @@ public class Main {
 
         // Создаю Epic1 с тремя подзадачами через HttpTaskServer
         HttpRequest.BodyPublisher body6 = HttpRequest.BodyPublishers
-                .ofString(gson.toJson(new Epic(100, "Тест 6", "Создать Epic 6", new ArrayList<>())));
+                .ofString(GSON.toJson(new Epic(100, "Тест 6", "Создать Epic 6", new ArrayList<>())));
         HttpRequest request6 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/epic/"))
                 .POST(body6).build();
@@ -94,29 +92,29 @@ public class Main {
         SubTask subTask1 = new SubTask(100, "Тест 7", "Создать SubTask 7", 6);
         subTask1.setStartTime(LocalDateTime.parse("25.07.2022 15:00", dateTimeFormatter));
         subTask1.setDuration(60);
-        HttpRequest.BodyPublisher body7 = HttpRequest.BodyPublishers.ofString(gson.toJson(subTask1));
+        HttpRequest.BodyPublisher body7 = HttpRequest.BodyPublishers.ofString(GSON.toJson(subTask1));
         HttpRequest request7 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask/"))
                 .POST(body7).build();
         HttpResponse<String> httpResponse = client.send(request7, HttpResponse.BodyHandlers.ofString());
-        subTask1 = gson.fromJson(httpResponse.body(), SubTask.class);
+        subTask1 = GSON.fromJson(httpResponse.body(), SubTask.class);
 
         // Создаю подзадачу 2 для Epic1 через HttpTaskServer
         SubTask subTask2 = new SubTask(100, "Тест 8", "Создать SubTask 8", 6);
         subTask2.setStartTime(LocalDateTime.parse("25.07.2022 13:00", dateTimeFormatter));
         subTask2.setDuration(60);
-        HttpRequest.BodyPublisher body8 = HttpRequest.BodyPublishers.ofString(gson.toJson(subTask2));
+        HttpRequest.BodyPublisher body8 = HttpRequest.BodyPublishers.ofString(GSON.toJson(subTask2));
         HttpRequest request8 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask/"))
                 .POST(body8).build();
         httpResponse = client.send(request8, HttpResponse.BodyHandlers.ofString());
-        subTask2 = gson.fromJson(httpResponse.body(), SubTask.class);
+        subTask2 = GSON.fromJson(httpResponse.body(), SubTask.class);
 
         // Создаю подзадачу 3 для Epic1 через HttpTaskServer
         SubTask subTask3 = new SubTask(100, "Тест 9", "Создать SubTask 9", 6);
         subTask3.setStartTime(LocalDateTime.parse("25.07.2022 18:00", dateTimeFormatter));
         subTask3.setDuration(60);
-        HttpRequest.BodyPublisher body9 = HttpRequest.BodyPublishers.ofString(gson.toJson(subTask3));
+        HttpRequest.BodyPublisher body9 = HttpRequest.BodyPublishers.ofString(GSON.toJson(subTask3));
         HttpRequest request9 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask/"))
                 .POST(body9).build();
@@ -124,7 +122,7 @@ public class Main {
 
         //  меняю статус подзадачи 1 для Epic1
         subTask1.setStatus(Status.IN_PROGRESS);
-        HttpRequest.BodyPublisher body10 = HttpRequest.BodyPublishers.ofString(gson.toJson(subTask1));
+        HttpRequest.BodyPublisher body10 = HttpRequest.BodyPublishers.ofString(GSON.toJson(subTask1));
         HttpRequest request10 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask?7"))
                 .POST(body10).build();
@@ -132,7 +130,7 @@ public class Main {
 
         //  меняю статус подзадачи 2 для Epic1
         subTask2.setStatus(Status.DONE);
-        HttpRequest.BodyPublisher body11 = HttpRequest.BodyPublishers.ofString(gson.toJson(subTask2));
+        HttpRequest.BodyPublisher body11 = HttpRequest.BodyPublishers.ofString(GSON.toJson(subTask2));
         HttpRequest request11 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask?8"))
                 .POST(body11).build();
@@ -144,42 +142,42 @@ public class Main {
                 .GET()
                 .build();
         httpResponse = client.send(request12, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), SubTask.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), SubTask.class));
 
         HttpRequest request13 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/subtask?8"))
                 .GET()
                 .build();
         httpResponse = client.send(request13, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), SubTask.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), SubTask.class));
 
         HttpRequest request14 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/epic?6"))
                 .GET()
                 .build();
         httpResponse = client.send(request14, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), Epic.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), Epic.class));
 
         HttpRequest request15 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/epic?6"))
                 .GET()
                 .build();
         httpResponse = client.send(request15, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), Epic.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), Epic.class));
 
         HttpRequest request16 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task?4"))
                 .GET()
                 .build();
         httpResponse = client.send(request16, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), Task.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), Task.class));
 
         HttpRequest request17 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task?4"))
                 .GET()
                 .build();
         httpResponse = client.send(request17, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Результат вызова по ID: " + gson.fromJson(httpResponse.body(), Task.class));
+        System.out.println("Результат вызова по ID: " + GSON.fromJson(httpResponse.body(), Task.class));
 
         // вызываю метод getPrioritizedTasks()
         HttpRequest request18 = HttpRequest.newBuilder()
@@ -188,10 +186,7 @@ public class Main {
                 .build();
         httpResponse = client.send(request18, HttpResponse.BodyHandlers.ofString());
         System.out.println("\nЗадачи в порядке срока выполнения:");
-        List<String> prioritizedList = gson.fromJson(httpResponse.body(), List.class);
-        prioritizedList.stream()
-                .map(string -> gson.fromJson(string, Task.class))
-                .forEach(System.out::println);
+        printJsonList(httpResponse);
 
         // вызываю историю обращения к задачам
         HttpRequest request19 = HttpRequest.newBuilder()
@@ -200,15 +195,12 @@ public class Main {
                 .build();
         httpResponse = client.send(request19, HttpResponse.BodyHandlers.ofString());
         System.out.println("\nИстория обращения к задачам:");
-        List<String> gsonHistoryList = gson.fromJson(httpResponse.body(), List.class);
-        gsonHistoryList.stream()
-                .map(string -> gson.fromJson(string, Task.class))
-                .forEach(System.out::println);
+        printJsonList(httpResponse);
 
 
         // Выключаю httpTaskServer1 и запускаю httpTaskServer2
         httpTaskServer1.stop();
-        HttpTaskServer httpTaskServer2 = new HttpTaskServer();
+        HttpTaskServer httpTaskServer2 = new HttpTaskServer("http://localhost:8078", "save1");
         httpTaskServer2.start();
         HttpClient client2 = HttpClient.newHttpClient();
 
@@ -217,26 +209,40 @@ public class Main {
                 .uri(URI.create("http://localhost:8080/tasks"))
                 .GET()
                 .build();
-        httpResponse = client2.send(request18, HttpResponse.BodyHandlers.ofString());
+        httpResponse = client2.send(request20, HttpResponse.BodyHandlers.ofString());
         System.out.println("\nЗадачи в порядке срока выполнения: (из сохранения)");
-        prioritizedList = gson.fromJson(httpResponse.body(), List.class);
-        prioritizedList.stream()
-                .map(string -> gson.fromJson(string, Task.class))
-                .forEach(System.out::println);
+        printJsonList(httpResponse);
 
         // вызываю историю обращения к задачам
         HttpRequest request21 = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/history"))
                 .GET()
                 .build();
-        httpResponse = client2.send(request19, HttpResponse.BodyHandlers.ofString());
+        httpResponse = client2.send(request21, HttpResponse.BodyHandlers.ofString());
         System.out.println("\nИстория обращения к задачам: (из сохранения)");
-        gsonHistoryList = gson.fromJson(httpResponse.body(), List.class);
-        gsonHistoryList.stream()
-                .map(string -> gson.fromJson(string, Task.class))
-                .forEach(System.out::println);
+        printJsonList(httpResponse);
+    }
+
+    public static void printJsonList(HttpResponse<String> httpResponse) {
+        List<String> prioritizedList = GSON.fromJson(httpResponse.body(), List.class);
+        prioritizedList.stream().map(JsonParser::parseString)
+                .map(JsonElement::getAsJsonObject)
+                .map(jsonObject -> {
+                    switch (TypeTask.valueOf(GSON.fromJson(jsonObject.get("typeTask"), String.class))) {
+                        case EPIC -> {
+                            return GSON.fromJson(jsonObject, Epic.class);
+                        }
+                        case SUBTASK -> {
+                            return GSON.fromJson(jsonObject, SubTask.class);
+                        }
+                        default -> {
+                            return GSON.fromJson(jsonObject, Task.class);
+                        }
+                    }
+                }).forEach(System.out::println);
     }
 }
+
 
 
 

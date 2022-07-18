@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import http.HttpTaskServer;
 import http.KVServer;
-import http.LocalDateTimeAdapter;
+import gsonAdapters.LocalDateTimeAdapter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ class HTTPTasksManagerTest {
     void beforeEach() throws IOException {
         kvServer = new KVServer();
         kvServer.start();
-        httpTaskServer = new HttpTaskServer();
+        httpTaskServer = new HttpTaskServer("http://localhost:8078", "save1");
         httpTaskServer.start();
         httpClient = HttpClient.newHttpClient();
     }
@@ -435,7 +435,7 @@ class HTTPTasksManagerTest {
         httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         httpTaskServer.stop();
-        HttpTaskServer newHttpTaskServer = new HttpTaskServer();
+        HttpTaskServer newHttpTaskServer = new HttpTaskServer("http://localhost:8078", "save1");
         newHttpTaskServer.start();
 
         request = HttpRequest.newBuilder()

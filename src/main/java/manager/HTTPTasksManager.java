@@ -11,12 +11,12 @@ public class HTTPTasksManager extends FileBackedTasksManager {
     private KVTaskClient kvTaskClient;
     private final Gson gson;
 
-    public HTTPTasksManager(String keyForSave) {
+    public HTTPTasksManager(String url, String keyForSave) {
         this.keyForSave = keyForSave;
         try {
-            kvTaskClient = new KVTaskClient();
+            kvTaskClient = new KVTaskClient(url);
         } catch (IOException | InterruptedException e) {
-            System.out.println("Ошибка при создании KVTaskClient");
+            System.out.println("Ошибка при создании KVTaskClient \n" + e.getMessage());
         }
         gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         loadFromSave();
@@ -26,13 +26,14 @@ public class HTTPTasksManager extends FileBackedTasksManager {
     public void save() {
         String head = "id,type,name,status,description,epic,subtasks,Date&Time,Duration\n";
         StringBuilder tasksInString = new StringBuilder();
-        getListOfAllTasks().values().stream().forEach(task -> tasksInString.append(tasksToString(task)));
+        getListOfAllTasks().values().stream().
+                forEach(task -> tasksInString.append(tasksToString(task)));
         String stringForSave = head + tasksInString + historyToString();
         String json = gson.toJson(stringForSave);
         try {
             kvTaskClient.put(keyForSave, json);
         } catch (IOException | InterruptedException e) {
-            System.out.println("Ошибка при сохранении данных на сервер");
+            System.out.println("Ошибка при сохранении данных на сервер \n" + e.getMessage());
         }
     }
 
@@ -42,7 +43,7 @@ public class HTTPTasksManager extends FileBackedTasksManager {
         try {
             json = kvTaskClient.load(keyForSave);
         } catch (IOException | InterruptedException e) {
-            System.out.println("Ошибка при загрузке данных с сервера");
+            System.out.println("Ошибка при загрузке данных с сервера \n" + e.getMessage());
         }
         String value = gson.fromJson(json, String.class);
         if (value != null && (!value.isBlank())) {

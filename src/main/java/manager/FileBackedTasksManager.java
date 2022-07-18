@@ -31,7 +31,7 @@ public class FileBackedTasksManager extends InMemoryTasksManager implements Task
             try {
                 saveFile.createNewFile();
             } catch (IOException e) {
-                throw new ManagerSaveException("Ошибка при создании файла сохранения" + e.getMessage());
+                throw new ManagerSaveException("Ошибка при создании файла сохранения " + e.getMessage());
             }
         }
     }

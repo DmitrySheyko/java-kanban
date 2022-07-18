@@ -1,7 +1,6 @@
 package manager;
 
 import java.io.File;
-import java.net.URI;
 
 public class Managers {
 
@@ -9,12 +8,12 @@ public class Managers {
         return new InMemoryTasksManager();
     }
 
-    public static FileBackedTasksManager getDefaultBackedManager() {
-        return new FileBackedTasksManager(new File("resources/task.csv"));
+    public static HTTPTasksManager getDefaultManager(String url, String keyForSave) {
+        return new HTTPTasksManager(url, keyForSave);
     }
 
-    public static HTTPTasksManager getHttpTaskManager(String keyForSave) {
-        return new HTTPTasksManager(keyForSave);
+    public static FileBackedTasksManager getDefaultBackedManager() {
+        return new FileBackedTasksManager(new File("resources/task.csv"));
     }
 
     public static HistoryManager getDefaultHistory() {

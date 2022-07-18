@@ -1,5 +1,6 @@
 package http;
 
+import gsonAdapters.LocalDateTimeAdapter;
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -17,16 +18,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HttpTaskServer {
-    static TasksManager httpTaskManager;
-    public static final int PORT = 8080;
-    HttpServer httpServer;
-    Gson gson;
+    private static TasksManager httpTaskManager;
+    private static final int PORT = 8080;
+    private static HttpServer httpServer;
+    private static Gson gson;
+    private final static String GET = "GET";
+    private final static String POST = "POST";
+    private final static String DELETE = "DELETE";
 
-    public HttpTaskServer() throws IOException {
-        httpTaskManager = Managers.getHttpTaskManager("save1");
+    public HttpTaskServer(String url, String keyForSave) throws IOException {
+        httpTaskManager = Managers.getDefaultManager(url, keyForSave);
         httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
-        gson = new GsonBuilder()
-                .serializeNulls()
+        gson = new GsonBuilder().serializeNulls()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .create();
         httpServer.createContext("/tasks", this::tasksHandler);
@@ -51,22 +54,24 @@ public class HttpTaskServer {
         String response = "";
         String method = httpExchange.getRequestMethod();
         switch (method) {
-            case "GET" -> {
+            case GET -> {
                 List<String> prioritizedListOfAllTasks = httpTaskManager.getPrioritizedTasks().stream()
                         .map(task -> gson.toJson(task))
                         .collect(Collectors.toList());
                 response = gson.toJson(prioritizedListOfAllTasks);
                 httpExchange.sendResponseHeaders(200, 0);
             }
-            case "DELETE" -> {
+            case DELETE -> {
                 httpTaskManager.deleteAllTasks();
                 response = gson.toJson("Все задачи удалены");
                 httpExchange.sendResponseHeaders(200, 0);
             }
             default -> httpExchange.sendResponseHeaders(405, 0);
         }
-        try (OutputStream os = httpExchange.getResponseBody()) {
-            os.write(response.getBytes());
+        try (OutputStream outputStream = httpExchange.getResponseBody()) {
+            outputStream.write(response.getBytes());
+        } catch (IOException e){
+            System.out.println("Ошибка при открытии outputStream \n" + e.getMessage());
         }
     }
 
@@ -82,13 +87,13 @@ public class HttpTaskServer {
                 idFromURL = Integer.parseInt(stringIdFromURL);
                 isURLHaveId = true;
             } catch (NumberFormatException e) {
-                System.out.println("Неверно указан ID задачи");
+                System.out.println("Неверно указан ID задачи " + e.getMessage());
                 return;
             }
         }
         String method = httpExchange.getRequestMethod();
         switch (method) {
-            case "GET" -> {
+            case GET -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfTasks().containsKey(idFromURL)) {
                         Task requestedTask = httpTaskManager.getTaskById(idFromURL);
@@ -101,7 +106,7 @@ public class HttpTaskServer {
                     httpExchange.sendResponseHeaders(405, 0);
                 }
             }
-            case "POST" -> {
+            case POST -> {
                 String body = new String(httpExchange.getRequestBody().readAllBytes());
                 JsonElement jsonElement = JsonParser.parseString(body);
                 if (!jsonElement.isJsonObject()) {
@@ -124,7 +129,7 @@ public class HttpTaskServer {
                     }
                 }
             }
-            case "DELETE" -> {
+            case DELETE -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfTasks().containsKey(idFromURL)) {
                         Task deletedTask = httpTaskManager.deleteTaskById(idFromURL);
@@ -139,9 +144,10 @@ public class HttpTaskServer {
             }
             default -> httpExchange.sendResponseHeaders(405, 0);
         }
-        try (
-                OutputStream os = httpExchange.getResponseBody()) {
-            os.write(response.getBytes());
+        try (OutputStream outputStream = httpExchange.getResponseBody()) {
+            outputStream.write(response.getBytes());
+        } catch (IOException e){
+            System.out.println("Ошибка при открытии outputStream \n" + e.getMessage());
         }
     }
 
@@ -157,13 +163,13 @@ public class HttpTaskServer {
                 idFromURL = Integer.parseInt(stringIdFromURL);
                 isURLHaveId = true;
             } catch (NumberFormatException e) {
-                System.out.println("Неверно указан ID задачи");
+                System.out.println("Неверно указан ID задачи " + e.getMessage());
                 return;
             }
         }
         String method = httpExchange.getRequestMethod();
         switch (method) {
-            case "GET" -> {
+            case GET -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfEpics().containsKey(idFromURL)) {
                         Epic requestedEpic = httpTaskManager.getEpicById(idFromURL);
@@ -176,7 +182,7 @@ public class HttpTaskServer {
                     httpExchange.sendResponseHeaders(405, 0);
                 }
             }
-            case "POST" -> {
+            case POST -> {
                 String body = new String(httpExchange.getRequestBody().readAllBytes());
                 JsonElement jsonElement = JsonParser.parseString(body);
                 if (!jsonElement.isJsonObject()) {
@@ -199,7 +205,7 @@ public class HttpTaskServer {
                     }
                 }
             }
-            case "DELETE" -> {
+            case DELETE -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfEpics().containsKey(idFromURL)) {
                         Epic deletedEpic = httpTaskManager.deleteEpicById(idFromURL);
@@ -214,9 +220,10 @@ public class HttpTaskServer {
             }
             default -> httpExchange.sendResponseHeaders(405, 0);
         }
-        try (
-                OutputStream os = httpExchange.getResponseBody()) {
-            os.write(response.getBytes());
+        try (OutputStream outputStream = httpExchange.getResponseBody()) {
+            outputStream.write(response.getBytes());
+        } catch (IOException e){
+            System.out.println("Ошибка при открытии outputStream \n" + e.getMessage());
         }
     }
 
@@ -232,13 +239,13 @@ public class HttpTaskServer {
                 idFromURL = Integer.parseInt(stringIdFromURL);
                 isURLHaveId = true;
             } catch (NumberFormatException e) {
-                System.out.println("Неверно указан ID задачи");
+                System.out.println("Неверно указан ID задачи " + e.getMessage());
                 return;
             }
         }
         String method = httpExchange.getRequestMethod();
         switch (method) {
-            case "GET" -> {
+            case GET -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfSubTasks().containsKey(idFromURL)) {
                         SubTask requestedSubTask = httpTaskManager.getSubTaskById(idFromURL);
@@ -251,7 +258,7 @@ public class HttpTaskServer {
                     httpExchange.sendResponseHeaders(405, 0);
                 }
             }
-            case "POST" -> {
+            case POST -> {
                 String body = new String(httpExchange.getRequestBody().readAllBytes());
                 JsonElement jsonElement = JsonParser.parseString(body);
                 if (!jsonElement.isJsonObject()) {
@@ -274,7 +281,7 @@ public class HttpTaskServer {
                     }
                 }
             }
-            case "DELETE" -> {
+            case DELETE -> {
                 if (isURLHaveId) {
                     if (httpTaskManager.getListOfSubTasks().containsKey(idFromURL)) {
                         SubTask deletedSubTask = httpTaskManager.deleteSubTaskById(idFromURL);
@@ -289,8 +296,7 @@ public class HttpTaskServer {
             }
             default -> httpExchange.sendResponseHeaders(405, 0);
         }
-        try (
-                OutputStream os = httpExchange.getResponseBody()) {
+        try (OutputStream os = httpExchange.getResponseBody()) {
             os.write(response.getBytes());
         }
     }
@@ -301,7 +307,7 @@ public class HttpTaskServer {
         String response = "";
         String method = httpExchange.getRequestMethod();
         switch (method) {
-            case "GET" -> {
+            case GET -> {
                 List<String> history = httpTaskManager.getHistory().stream()
                         .map(task -> gson.toJson(task))
                         .collect(Collectors.toList());
@@ -310,8 +316,7 @@ public class HttpTaskServer {
             }
             default -> httpExchange.sendResponseHeaders(405, 0);
         }
-        try (
-                OutputStream os = httpExchange.getResponseBody()) {
+        try (OutputStream os = httpExchange.getResponseBody()) {
             os.write(response.getBytes());
         }
     }
