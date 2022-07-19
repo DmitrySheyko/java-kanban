@@ -1,5 +1,5 @@
 /*
- * Version 8
+ * Version 8.2
  * Tech requirements of sprint 8
  * Author: Sheyko Dmitry.
  */
@@ -47,7 +47,7 @@ public class Main {
         client.send(request, HttpResponse.BodyHandlers.ofString());
 
         // Создаю задачу 2 через HttpTaskServer
-        Task task2 = new Task(100, "Тест 1", "Создать Task 1");
+        Task task2 = new Task(100, "Тест 2", "Создать Task 2");
         task2.setStartTime(LocalDateTime.parse("26.07.2022 12:30", dateTimeFormatter));
         task2.setDuration(60);
         HttpRequest.BodyPublisher body2 = HttpRequest.BodyPublishers.ofString(GSON.toJson(task2));

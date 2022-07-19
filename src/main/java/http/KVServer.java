@@ -14,26 +14,31 @@ import com.sun.net.httpserver.HttpServer;
 public class KVServer {
     public static final int PORT = 8078;
     private final String apiToken;
-    private final HttpServer server;
+    private HttpServer server = null;
     private final Map<String, String> data = new HashMap<>();
 
-    public KVServer() throws IOException {
+    public KVServer() {
         apiToken = generateApiToken();
-        server = HttpServer.create(new InetSocketAddress("localhost", PORT), 0);
+        try {
+            server = HttpServer.create(new InetSocketAddress("localhost", PORT), 0);
+        } catch (IOException e) {
+            System.out.println("Ошибка при создании InetSocketAddress и открытии порта \n" + e.getMessage());
+        }
         server.createContext("/register", this::register);
         server.createContext("/save", this::save);
         server.createContext("/load", this::load);
+
     }
 
     private void load(HttpExchange httpExchange) {
         try (OutputStream outputStream = httpExchange.getResponseBody()) {
-            if (!hasAuth(httpExchange)) {  // проверяем есть ли API_TOKEN
+            if (!hasAuth(httpExchange)) {
                 System.out.println("Запрос неавторизован, нужен параметр в query API_TOKEN со значением апи-ключа");
-                httpExchange.sendResponseHeaders(403, 0);
+                httpExchange.sendResponseHeaders(401, 0);
                 return;
             }
             if ("GET".equals(httpExchange.getRequestMethod())) {
-                String key = httpExchange.getRequestURI().getPath().substring("/load/".length()); // получаем ID из пути
+                String key = httpExchange.getRequestURI().getPath().substring("/load/".length());
                 if (key.isEmpty()) {
                     System.out.println("Key для получения пустой. key указывается в пути: /load/{key}");
                     httpExchange.sendResponseHeaders(400, 0);
@@ -44,14 +49,19 @@ public class KVServer {
                     httpExchange.sendResponseHeaders(200, 0);
                     outputStream.write(valueForResponse.getBytes());
                 } else {
-                    httpExchange.sendResponseHeaders(405, 0);
+                    httpExchange.sendResponseHeaders(404, 0);
                 }
             } else {
                 System.out.println("/load ждёт GET-запрос, а получил: " + httpExchange.getRequestMethod());
                 httpExchange.sendResponseHeaders(405, 0);
             }
         } catch (IOException e) {
-            System.out.println("Ошибка открытия OutPutStream в ходе работы KVServer \n" + e.getMessage());
+            System.out.println("Ошибка открытия OutPutStream в ходе работы метода load() \n" + e.getMessage());
+            try {
+                httpExchange.sendResponseHeaders(500, 0);
+            } catch (IOException ex) {
+                System.out.println("Ошибка отправки данных в методе load()\n" + e.getMessage());
+            }
         } finally {
             httpExchange.close();
         }
@@ -61,7 +71,7 @@ public class KVServer {
         try {
             if (!hasAuth(httpExchange)) {
                 System.out.println("Запрос неавторизован, нужен параметр в query API_TOKEN со значением апи-ключа");
-                httpExchange.sendResponseHeaders(403, 0);
+                httpExchange.sendResponseHeaders(401, 0);
                 return;
             }
             if ("POST".equals(httpExchange.getRequestMethod())) {
@@ -84,7 +94,12 @@ public class KVServer {
                 httpExchange.sendResponseHeaders(405, 0);
             }
         } catch (IOException e) {
-            System.out.println("Ошибка в ходе работы KVServer \n" + e.getMessage());
+            System.out.println("Ошибка в ходе отправки статуса запроса в методе save() \n" + e.getMessage());
+            try {
+                httpExchange.sendResponseHeaders(500, 0);
+            } catch (IOException ex) {
+                System.out.println("Ошибка отправки данных в методе save()\n" + e.getMessage());
+            }
         } finally {
             httpExchange.close();
         }
@@ -99,16 +114,23 @@ public class KVServer {
                 httpExchange.sendResponseHeaders(405, 0);
             }
         } catch (IOException e) {
-            System.out.println("Ошибка в ходе работы KVServer \n" + e.getMessage());
+            System.out.println("Ошибка в ходе работы метода register() \n" + e.getMessage());
+            try {
+                httpExchange.sendResponseHeaders(500, 0);
+            } catch (IOException ex) {
+                System.out.println("Ошибка отправки данных в методе register() \n" + e.getMessage());
+            }
         } finally {
             httpExchange.close();
         }
     }
 
     public void start() {
-        System.out.println("Запущен сервер на порту " + PORT);
-        System.out.println("API_TOKEN: " + apiToken);
-        server.start();
+        if (server != null) {
+            System.out.println("Запущен сервер на порту " + PORT);
+            System.out.println("API_TOKEN: " + apiToken);
+            server.start();
+        }
     }
 
     private String generateApiToken() {

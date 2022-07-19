@@ -38,8 +38,8 @@ public class InMemoryTasksManager implements TasksManager {
     public Task creationOfTask(Task task) {
         Task newTask = new Task(getUniqueTaskId(), task.getName(), task.getDescription());
         newTask.setStatus(Status.NEW);
-        if(task.getStartTime()!=null){
-            setTaskAndSubTaskStartDateTime(newTask,  task.getStartTime().format(dateTimeFormatter));
+        if (task.getStartTime() != null) {
+            setTaskAndSubTaskStartDateTime(newTask, task.getStartTime().format(dateTimeFormatter));
             setTaskAndSubTaskDuration(newTask, task.getDuration());
         }
         taskList.put(newTask.getId(), newTask);
@@ -64,8 +64,8 @@ public class InMemoryTasksManager implements TasksManager {
             SubTask newSubTask = new SubTask(getUniqueTaskId(), subTask.getName(), subTask.getDescription(),
                     subTask.getEpicId());
             newSubTask.setStatus(Status.NEW);
-            if(subTask.getStartTime()!=null){
-                setTaskAndSubTaskStartDateTime(newSubTask,  subTask.getStartTime().format(dateTimeFormatter));
+            if (subTask.getStartTime() != null) {
+                setTaskAndSubTaskStartDateTime(newSubTask, subTask.getStartTime().format(dateTimeFormatter));
                 setTaskAndSubTaskDuration(newSubTask, subTask.getDuration());
             }
             subTaskList.put(newSubTask.getId(), newSubTask);
@@ -359,7 +359,7 @@ public class InMemoryTasksManager implements TasksManager {
                         .filter(id -> subTaskList.get(id).getStartTime() != null)
                         .map(id -> subTaskList.get(id).getStartTime())
                         .reduce((startTime1, startTime2) -> startTime1.isBefore(startTime2) ? startTime1 : startTime2);
-                if(optionalEarliestTime.isPresent()){
+                if (optionalEarliestTime.isPresent()) {
                     epicForUpdate.setStartTime(optionalEarliestTime.get());
                 } else {
                     epicForUpdate.setStartTime(null);

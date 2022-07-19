@@ -1,5 +1,7 @@
 package http;
 
+import exceptions.KVTaskClientException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,33 +13,51 @@ public class KVTaskClient {
     private final URI urlOfKvServer;
     private final String apiToken;
 
-    public KVTaskClient(String url) throws IOException, InterruptedException {
+    public KVTaskClient(String url) throws KVTaskClientException {
         this.client = HttpClient.newHttpClient();
         this.urlOfKvServer = URI.create(url);
         this.apiToken = makeRegistration();
     }
 
-    public void put(String key, String json) throws IOException, InterruptedException {
-        URI url = URI.create(urlOfKvServer + "/save/" + key + "?API_TOKEN=" + apiToken);
+    public HttpResponse<String> put(String keyForSave, String json) throws KVTaskClientException {
+        URI url = URI.create(urlOfKvServer + "/save/" + keyForSave + "?API_TOKEN=" + apiToken);
         final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
-        client.send(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            throw new KVTaskClientException("IOException в ходе работы метода put()");
+        } catch (InterruptedException e) {
+            throw new KVTaskClientException("InterruptedException в ходе работы метода put()");
+        }
     }
 
-    public String load(String key) throws IOException, InterruptedException {
-        URI url = URI.create(urlOfKvServer + "/load/" + key + "?API_TOKEN=" + apiToken);
+    public HttpResponse<String> load(String keyForSave) throws KVTaskClientException {
+        URI url = URI.create(urlOfKvServer + "/load/" + keyForSave + "?API_TOKEN=" + apiToken);
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            throw new KVTaskClientException("IOException в ходе работы метода load()");
+        } catch (InterruptedException e) {
+            throw new KVTaskClientException("InterruptedException в ходе работы метода load()");
+        }
     }
 
-    public String makeRegistration() throws IOException, InterruptedException {
+    public String makeRegistration() throws KVTaskClientException {
         URI url = URI.create(urlOfKvServer + "/register");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .GET()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            throw new KVTaskClientException("IOException в ходе работы метода makeRegistration()");
+        } catch (InterruptedException e) {
+            throw new KVTaskClientException("InterruptedException в ходе работы метода makeRegistration()");
+        }
         return response.body();
     }
 }
